@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@font-face {
+    font-family: 'Gotham';
+    font-weight: 400;
+    src: url('./assets/fonts/gotham-regular.woff2'); 
+}
+
+@font-face {
+    font-family: 'Gotham';
+    font-weight: 900;
+    src: url('./assets/fonts/gotham-black.woff2');
+}
+
+@font-face {
+    font-family: 'Gotham';
+    font-weight: 700;
+    src: url('./assets/fonts/gotham-bold.woff2');
+}
+
+@font-face {
+    font-family: 'Gotham';
+    font-weight: 300;
+    src: url('./assets/fonts/gotham-light.woff2');
+}
+
+
+@font-face {
+    font-family: 'Gotham';
+    font-weight: 300;
+    src: url('./assets/fonts/gotham-light.woff2');
+}
+
+
+
+
+@layer reset {
+
+    * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+        font-family: 'Gotham', sans-serif;
+    }
+
+    body {
+        @apply bg-white;
+    }
+}
+
