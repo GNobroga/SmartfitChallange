@@ -8,11 +8,13 @@ import Footer from './components/Footer';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppState } from './store';
 import { getLocations } from './store/reducers/location.reducer';
+import Loading from './components/Loading';
 
 
 function App() {
 
   const locations = useSelector((selector: AppState) => selector.location.data);
+  const loading = useSelector((selector: AppState) => selector.location.loading);
   const dispatch = useDispatch();
 
 
@@ -28,7 +30,8 @@ function App() {
         <Presentation/>
         <Form/>
         <Legend/>
-        <List data={locations}/>
+        { loading && <Loading/>}
+        { !loading && <List data={locations}/> }
      </div>
      <Footer/>
     </React.Fragment>

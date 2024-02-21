@@ -1,6 +1,6 @@
-import React from "react";
+
 import { imageHelper } from "../helpers/imageHelper";
-import { Period, filterPerPeriod, getLocations, success } from "../store/reducers/location.reducer";
+import { filterPerPeriod, getLocations, success } from "../store/reducers/location.reducer";
 import { useDispatch, useSelector } from "react-redux";
 import { setPeriod, setShowClosedUnit } from "../store/reducers/filter.reducer";
 import { AppState } from "../store";
@@ -9,13 +9,17 @@ function Form() {
 
     const dispatch = useDispatch();
     const period = useSelector((selector: AppState) => selector.filter.period);
+    const data = useSelector((selector: AppState) => selector.location.data);
     const showClosedUnit = useSelector((selector: AppState) => selector.filter.showClosedUnit);
 
     const onSearchRequest = async () => {
-        if (!period) return;
-        const data = await dispatch(getLocations() as any);
-        console.log(data);
-        dispatch(success(filterPerPeriod(period, data)));
+        if (period) {
+            const data = await dispatch(getLocations(showClosedUnit) as any);
+            dispatch(success(filterPerPeriod(period, data)));
+        } else {
+            console.log(showClosedUnit)
+            dispatch(getLocations(showClosedUnit) as any);
+        }
     };
 
     const clear = () => {
@@ -56,12 +60,12 @@ function Form() {
         </ul>
       <div className="flex flex-col sm:flex-row justify-between gap-5">
         <div className="flex gap-2 items-center">
-                <input type="checkbox" name="showClosedUnit" onChange={() => dispatch(setShowClosedUnit(!showClosedUnit))}/>
+                <input type="checkbox" name="showClosedUnit" checked={showClosedUnit} onChange={() => dispatch(setShowClosedUnit(!showClosedUnit))}/>
                 <span>Exibir unidades fechadas</span>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
                 <span>Resultados encontrados: </span>
-                <span className="font-bold text-xl">0</span>
+                <span className="font-bold text-base">{ data?.length ?? 0 }</span>
             </div>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">

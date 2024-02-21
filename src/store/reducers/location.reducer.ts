@@ -38,7 +38,7 @@ const slice = createSlice({
 
 export const { startFetch, success, failure } = slice.actions;
 
-export const getLocations = () => async (dispatch: AppDispatch) => {
+export const getLocations = (showClosedUnit = false) => async (dispatch: AppDispatch) => {
     try {
         dispatch(startFetch());
         const req = await fetch(apiConfig.baseUrl);
@@ -51,8 +51,9 @@ export const getLocations = () => async (dispatch: AppDispatch) => {
                 return x;
             });
             
-        const filtered = filterLocationsAndAddIsOpenFlag(locations);
-        dispatch(success(filtered));
+        const filtered = filterLocationsAndAddIsOpenFlag(locations, showClosedUnit);
+
+        setTimeout(() => dispatch(success(filtered)), 500);
         return filtered;
     } catch (error) {
         dispatch(failure(new Error('Um erro ocorreu, tente novamente mais tarde!')));
@@ -101,7 +102,7 @@ const splitHoursAndGetWithMinutes = (hour: string) => {
         above: topDate,
     };
 }
-export const filterLocationsAndAddIsOpenFlag = function(locations: ILocation[]) {
+export const filterLocationsAndAddIsOpenFlag = function(locations: ILocation[], showClosedUnit = false) {
     if (!locations) return [];
 
     const isOpened = (schedule: ISchedule) => {
@@ -119,12 +120,16 @@ export const filterLocationsAndAddIsOpenFlag = function(locations: ILocation[]) 
             && getWeekDayList(schedule.weekdays).includes(today.getDay());
     };
 
-    const results = locations.map(location => {
+    let results = locations.map(location => {
         location.isOpen = location.schedules.some(isOpened);
         return location;
     });
 
-    results.sort((x, y) => new Number(x.isOpen) <  new Number(y.isOpen) ?  1 : -1);
+    if (!showClosedUnit) {
+        results = results.filter(x => x.isOpen);
+    } else {
+        results.sort((x, y) => new Number(x.isOpen) <  new Number(y.isOpen) ?  1 : -1);
+    }
 
     return results;
 };
@@ -166,30 +171,25 @@ export const filterPerPeriod = (period: Period, data: ILocation[] | null) => {
    const filterSchedules = (schedule: ISchedule) => {
 
         const { below, above } = splitHoursAndGetWithMinutes(schedule.hour);
-        
+
         return (
             (below.getTime() >= periodStartDate.getTime() && below.getTime() <= periodFinishDate.getTime()) 
-                ||
+                &&
             (above.getTime() >= periodStartDate.getTime() && above.getTime() <= periodFinishDate.getTime()) 
                 &&
             (getWeekDayList(schedule.weekdays).includes(new Date().getDay()))
          
         );
-    
     };
 
     const isValidSchedule = (arg: ISchedule) => !arg.hour.toLowerCase().includes('fechada') && /^\d{2}h(\d{2})?\sàs\s\d{2}h(\d{2})?$/.test(arg.hour);
 
-    const results = data.map(
+    return data.map(
         location => {
             const isOpen = location.schedules.filter(isValidSchedule).some(filterSchedules);
             return {...location, isOpen };
         }
     );
-
-    results.sort((x, y) => new Number(x.isOpen) <  new Number(y.isOpen) ?  1 : -1);
-
-    return results;
 };
 
 
