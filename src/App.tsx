@@ -5,9 +5,20 @@ import Form from './components/Form';
 import Legend from './components/Legend';
 import List from './components/List';
 import Footer from './components/Footer';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppState } from './store';
+import { filterLocationsAndAddIsOpenFlag, getLocations } from './store/reducers/location.reducer';
 
 
 function App() {
+
+  const locations = useSelector((selector: AppState) => selector.location.data);
+  const dispatch = useDispatch();
+
+  React.useEffect(() => {
+    dispatch(getLocations() as any);
+  }, []);
+
 
   return (
     <React.Fragment>
@@ -16,7 +27,7 @@ function App() {
         <Presentation/>
         <Form/>
         <Legend/>
-        <List/>
+        <List data={locations}/>
      </div>
      <Footer/>
     </React.Fragment>
