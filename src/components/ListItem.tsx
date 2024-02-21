@@ -16,7 +16,7 @@ function ListItem({ data }: IProps) {
 
 
         return (
-            <div className="mt-5 grid grid-col-1 sm:grid-cols-2 gap-2">
+            <div className="mt-5 grid grid-col-1 md:grid-cols-2 gap-2">
             {
                 data.schedules?.map((schedule, index) => {
                 return (
@@ -49,7 +49,7 @@ function ListItem({ data }: IProps) {
     };
 
     return (
-        <li className="bg-brand-tertiary p-5 flex flex-col flex-wrap  flex-1 min-w-[270px] max-w-[270px] min-h-[400px] rounded-md shadow-md border">
+        <li className="bg-brand-tertiary p-5 flex flex-col flex-wrap  flex-1 min-w-[250px]  min-h-[400px] rounded-md shadow-md border">
             <span className={`text-green-400 text-xs font-bold ${data.isOpen ? 'text-green-500' : 'text-red-500'}`}>{data.isOpen ? 'Aberto' : 'Fechado'}</span>
             <h1 className="mt-3 font-semibold text-xl">{ data.title }</h1>
             <p className={`text-xs opacity-60 ${data.isOpen ? 'border-b-2' : ''} pb-2 mt-4`} dangerouslySetInnerHTML={{ __html: data.content }}></p>

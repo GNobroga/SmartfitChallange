@@ -7,13 +7,14 @@ import List from './components/List';
 import Footer from './components/Footer';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppState } from './store';
-import { filterLocationsAndAddIsOpenFlag, getLocations } from './store/reducers/location.reducer';
+import { getLocations } from './store/reducers/location.reducer';
 
 
 function App() {
 
   const locations = useSelector((selector: AppState) => selector.location.data);
   const dispatch = useDispatch();
+
 
   React.useEffect(() => {
     dispatch(getLocations() as any);

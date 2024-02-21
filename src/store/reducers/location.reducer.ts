@@ -46,13 +46,14 @@ export const getLocations = () => async (dispatch: AppDispatch) => {
      
         const locations: ILocation[] = (data.locations as  ILocation[])
             .filter(x => x.schedules?.length > 0)
+            .map(x => {
+                x.isOpen = false;
+                return x;
+            });
             
-    
         const filtered = filterLocationsAndAddIsOpenFlag(locations);
-
-        filtered.sort((x, y) => new Number(x.isOpen) <  new Number(y.isOpen) ?  1 : -1)
-
         dispatch(success(filtered));
+        return filtered;
     } catch (error) {
         dispatch(failure(new Error('Um erro ocorreu, tente novamente mais tarde!')));
     }
@@ -76,8 +77,30 @@ const getDayofWeek = (day: WEEK) => {
 
 /**
  * Essa função verificar quais unidades estão abertas no momento já que no arquivo disponibilizado no desafio todas estão como abertas.
- * 
  */
+
+const getWeekDayList = (weekdays: string) => {
+    const weekdayList: number[] = [];
+    const params = weekdays.split(' à ').map(x => getDayofWeek(x as WEEK));
+    for (let i = params[0]; i <= (params[1] ?? params[0]) ; i++) {
+        weekdayList.push(i);
+    }
+    return weekdayList;
+}
+
+const splitHoursAndGetWithMinutes = (hour: string) => {
+    const rangeHourSplited = hour.split(' às ');
+    const bottom = rangeHourSplited[0].split('h').map(value => value === '' ? '0' : value);
+    const top = rangeHourSplited[0].split('h').map(value => value === '' ? '0' : value);
+    const bottomDate = new Date();
+    const topDate = new Date();
+    bottomDate.setHours(parseInt(bottom[0]), parseInt(bottom[1]), 0);
+    topDate.setHours(parseInt(top[0]), parseInt(top[1]), 0);
+    return {
+        below: bottomDate,
+        above: topDate,
+    };
+}
 export const filterLocationsAndAddIsOpenFlag = function(locations: ILocation[]) {
     if (!locations) return [];
 
@@ -88,102 +111,79 @@ export const filterLocationsAndAddIsOpenFlag = function(locations: ILocation[]) 
 
         const today = new Date();
 
-        const weekdays = schedule.weekdays.split(' à ').map(x => getDayofWeek(x as WEEK));
+        const { below, above } = splitHoursAndGetWithMinutes(schedule.hour);
 
-        const scheduleHours =  schedule.hour.split(' às ');
-
-        const bottomHoursAndMinutes = scheduleHours[0].split('h');
-        const bottomHours = parseInt(bottomHoursAndMinutes[0]);
-        const bottomMinutes = parseInt(!bottomHoursAndMinutes[1] || bottomHoursAndMinutes[1] === '' ? '0' : bottomHoursAndMinutes[1]);
-        const bottomDate = new Date();
-        bottomDate.setHours(bottomHours);
-        bottomDate.setMinutes(bottomMinutes);
-
-        const topHoursAndMinutes = scheduleHours[1]?.split('h');
-
-        const topHours = parseInt(topHoursAndMinutes[0]);
-
-        const topMinutes = parseInt(!topHoursAndMinutes[1] || topHoursAndMinutes[1] === '' ? '0' : topHoursAndMinutes[1]);
-    
-        const topDate = new Date();
-
-        topDate.setHours(topHours);
-        topDate.setMinutes(topMinutes);
-        
         const currentTime = today.getTime();
-
-        return (currentTime >= bottomDate.getTime() && currentTime <= topDate.getTime()) 
-            && (today.getDay() < weekdays[0] || weekdays[1] > today.getDay());
+  
+        return currentTime >= below.getTime() && currentTime <= above.getTime() 
+            && getWeekDayList(schedule.weekdays).includes(today.getDay());
     };
 
-    return locations.map(location => {
-        return { ...location, isOpen: location.schedules?.some(isOpened) ?? false };
+    const results = locations.map(location => {
+        location.isOpen = location.schedules.some(isOpened);
+        return location;
     });
+
+    results.sort((x, y) => new Number(x.isOpen) <  new Number(y.isOpen) ?  1 : -1);
+
+    return results;
 };
 
 
 export type Period = '06h às 12:00' | '12h01 às 18:00' | '18:01 às 23:00';
 
 const convertPeriodToDate = (period: Period) => {
-    const start = new Date();
-    const end = new Date();
-
+    const periodStart: number[] = [18, 1];
+    const periodFinish: number[] = [23, 0];
     if (period === '06h às 12:00') {
-        start.setHours(6, 0, 0);
-        end.setHours(12, 0, 0);
+        periodStart[0] = 6;
+        periodFinish[1] = 12;
     } 
     else if (period === '12h01 às 18:00') {
-        start.setHours(12, 1, 0);
-        end.setHours(18, 0, 0);
+        periodStart[0] = 12;
+        periodStart[1] = 1;
+        periodFinish[0] = 18;
     }
-    else {
-        start.setHours(18, 1, 0);
-        end.setHours(23, 0, 0);
-    }
-
-    return { 
-        start: { 
-            hour: start.getHours(), minutes: start.getMinutes() 
-        }, 
-        end: {
-            hour: end.getHours(), minutes: end.getMinutes() ,
-        },
-    };
+    const periodStartDate = new Date();
+    const periodFinishDate = new Date();
+    periodStartDate.setHours(periodStart[0], periodStart[1] ,0);
+    periodFinishDate.setHours(periodFinish[0], periodFinish[1] ,0);
+    return { periodStartDate, periodFinishDate };
 }
 
 
 
-export const filterPerPeriod = (period: Period, locations: ILocation[] | null) => {
-   if (!locations) return [];
+export const filterPerPeriod = (period: Period, data: ILocation[] | null) => {
+   if (!data) return [];
     
-   const { start, end } = convertPeriodToDate(period);
+   const { periodStartDate, periodFinishDate } = convertPeriodToDate(period);
+ 
+   const filterSchedules = (schedule: ISchedule) => {
 
-   const filter = (schedule: ISchedule) => {
-        const scheduleHours =  schedule.hour.split(' às ');
+        const { below, above } = splitHoursAndGetWithMinutes(schedule.hour);
 
-        const bottomHoursAndMinutes = scheduleHours[0].split('h');
-        const bottomHours = parseInt(bottomHoursAndMinutes[0]);
-        const bottomMinutes = parseInt(!bottomHoursAndMinutes[1] || bottomHoursAndMinutes[1] === '' ? '0' : bottomHoursAndMinutes[1]);
-        const bottomDate = new Date();
-        bottomDate.setHours(bottomHours);
-        bottomDate.setMinutes(bottomMinutes);
-
-        const topHoursAndMinutes = scheduleHours[1]?.split('h');
-
-        const topHours = parseInt(topHoursAndMinutes[0]);
-
-        const topMinutes = parseInt(!topHoursAndMinutes[1] || topHoursAndMinutes[1] === '' ? '0' : topHoursAndMinutes[1]);
-
-        const topDate = new Date();
-
-        topDate.setHours(topHours);
-        topDate.setMinutes(topMinutes);
-
-        return (start.hour >= topDate.getHours() && start.minutes >= topDate.getMinutes()) &&
-            ((end.hour <= topDate.getHours() && end.minutes <= topDate.getMinutes()));
+        return (
+            (below.getTime() >= periodStartDate.getTime() && below.getTime() <= periodFinishDate.getTime()) 
+                &&
+            (above.getTime() >=  periodStartDate.getTime() && above.getTime() <= periodFinishDate.getTime()) 
+                &&
+            (getWeekDayList(schedule.weekdays).includes(new Date().getDay()))
+        );
+    
     };
 
-    return locations.filter(x => x.schedules.some(filter));
+    const isValidSchedule = (arg: ISchedule) => !arg.hour.toLowerCase().includes('fechada') && /^\d{2}h(\d{2})?\sàs\s\d{2}h(\d{2})?$/.test(arg.hour);
+
+    const results = data.map(
+        location => {
+            const isOpen = location.schedules.filter(isValidSchedule).some(filterSchedules);
+            return {...location, isOpen };
+        }
+    );
+
+    results.sort((x, y) => new Number(x.isOpen) <  new Number(y.isOpen) ?  1 : -1);
+
+    return results;
 };
 
 
