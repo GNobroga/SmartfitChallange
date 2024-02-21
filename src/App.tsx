@@ -17,10 +17,13 @@ function App() {
   const loading = useSelector((selector: AppState) => selector.location.loading);
   const dispatch = useDispatch();
 
-
   React.useEffect(() => {
     dispatch(getLocations() as any);
   }, []);
+
+  React.useEffect(() => {
+    console.log(locations)
+  }, [locations])
 
 
   return (

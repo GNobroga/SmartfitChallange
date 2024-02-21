@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { AppDispatch } from "..";
+import { AppDispatch, AppState } from "..";
 import { apiConfig } from "../../config/apiConfig";
 import { ILocation, ISchedule } from "../../models/location.model";
 
@@ -51,9 +51,9 @@ export const getLocations = (showClosedUnit = false) => async (dispatch: AppDisp
                 return x;
             });
             
-        const filtered = filterLocationsAndAddIsOpenFlag(locations, showClosedUnit);
+        let filtered = filterLocationsAndAddIsOpenFlag(locations, showClosedUnit);
 
-        setTimeout(() => dispatch(success(filtered)), 500);
+        dispatch(success(filtered));
         return filtered;
     } catch (error) {
         dispatch(failure(new Error('Um erro ocorreu, tente novamente mais tarde!')));
@@ -163,33 +163,42 @@ const convertPeriodToDate = (period: Period) => {
 
 
 
-export const filterPerPeriod = (period: Period, data: ILocation[] | null) => {
-   if (!data) return [];
+export const filterPerPeriod = (period: Period | null, data: ILocation[], showClosedUnit = false) => {
+    if (!data) return [];
     
-   const { periodStartDate, periodFinishDate } = convertPeriodToDate(period);
+   const { periodStartDate, periodFinishDate } = convertPeriodToDate(period!);
  
    const filterSchedules = (schedule: ISchedule) => {
 
         const { below, above } = splitHoursAndGetWithMinutes(schedule.hour);
 
         return (
-            (below.getTime() >= periodStartDate.getTime() && below.getTime() <= periodFinishDate.getTime()) 
+            below.getTime() >= periodStartDate.getTime() && below.getTime() <= periodFinishDate.getTime()
+                ||
+            above.getTime() >= periodStartDate.getTime() && above.getTime() <= periodFinishDate.getTime()
                 &&
-            (above.getTime() >= periodStartDate.getTime() && above.getTime() <= periodFinishDate.getTime()) 
-                &&
-            (getWeekDayList(schedule.weekdays).includes(new Date().getDay()))
+            getWeekDayList(schedule.weekdays).includes(new Date().getDay())
          
         );
     };
 
     const isValidSchedule = (arg: ISchedule) => !arg.hour.toLowerCase().includes('fechada') && /^\d{2}h(\d{2})?\sàs\s\d{2}h(\d{2})?$/.test(arg.hour);
 
-    return data.map(
+    let results = data.map(
         location => {
             const isOpen = location.schedules.filter(isValidSchedule).some(filterSchedules);
             return {...location, isOpen };
         }
     );
+
+    if (!showClosedUnit) {
+        results = results.filter(x => x.isOpen);
+    } else {
+        results.sort((x, y) => new Number(x.isOpen) <  new Number(y.isOpen) ?  1 : -1);
+    }
+
+
+    return results;
 };
 
 

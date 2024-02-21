@@ -14,10 +14,9 @@ function Form() {
 
     const onSearchRequest = async () => {
         if (period) {
-            const data = await dispatch(getLocations(showClosedUnit) as any);
-            dispatch(success(filterPerPeriod(period, data)));
+           const data = await dispatch(getLocations(showClosedUnit) as any);
+           dispatch(success(filterPerPeriod(period, data, showClosedUnit)));
         } else {
-            console.log(showClosedUnit)
             dispatch(getLocations(showClosedUnit) as any);
         }
     };
