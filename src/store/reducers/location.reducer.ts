@@ -133,7 +133,7 @@ export const filterLocationsAndAddIsOpenFlag = function(locations: ILocation[]) 
 export type Period = '06h às 12:00' | '12h01 às 18:00' | '18:01 às 23:00';
 
 const convertPeriodToDate = (period: Period) => {
-    const periodStart: number[] = [18, 1];
+    const periodStart: number[] = [18, 0];
     const periodFinish: number[] = [23, 0];
 
     if (period === '06h às 12:00') {
@@ -162,21 +162,18 @@ export const filterPerPeriod = (period: Period, data: ILocation[] | null) => {
    if (!data) return [];
     
    const { periodStartDate, periodFinishDate } = convertPeriodToDate(period);
-
-   
-   console.log(periodStartDate, periodFinishDate)
  
    const filterSchedules = (schedule: ISchedule) => {
 
         const { below, above } = splitHoursAndGetWithMinutes(schedule.hour);
-
-
+        
         return (
             (below.getTime() >= periodStartDate.getTime() && below.getTime() <= periodFinishDate.getTime()) 
-                &&
-            (above.getTime() >=  periodStartDate.getTime() && above.getTime() <= periodFinishDate.getTime()) 
+                ||
+            (above.getTime() >= periodStartDate.getTime() && above.getTime() <= periodFinishDate.getTime()) 
                 &&
             (getWeekDayList(schedule.weekdays).includes(new Date().getDay()))
+         
         );
     
     };
