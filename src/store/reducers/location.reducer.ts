@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { AppDispatch, AppState } from "..";
+import { AppDispatch } from "..";
 import { apiConfig } from "../../config/apiConfig";
 import { ILocation, ISchedule } from "../../models/location.model";
 
