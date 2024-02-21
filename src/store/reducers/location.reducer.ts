@@ -91,7 +91,7 @@ const getWeekDayList = (weekdays: string) => {
 const splitHoursAndGetWithMinutes = (hour: string) => {
     const rangeHourSplited = hour.split(' às ');
     const bottom = rangeHourSplited[0].split('h').map(value => value === '' ? '0' : value);
-    const top = rangeHourSplited[0].split('h').map(value => value === '' ? '0' : value);
+    const top = rangeHourSplited[1].split('h').map(value => value === '' ? '0' : value);
     const bottomDate = new Date();
     const topDate = new Date();
     bottomDate.setHours(parseInt(bottom[0]), parseInt(bottom[1]), 0);
@@ -112,6 +112,8 @@ export const filterLocationsAndAddIsOpenFlag = function(locations: ILocation[]) 
         const today = new Date();
 
         const { below, above } = splitHoursAndGetWithMinutes(schedule.hour);
+
+    console.log(below, above)
 
         const currentTime = today.getTime();
   
