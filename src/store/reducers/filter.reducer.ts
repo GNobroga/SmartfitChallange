@@ -8,7 +8,7 @@ interface IState {
 
 const initialState: IState = {
     period: null,
-    showClosedUnit: false,
+    showClosedUnit: true,
 };
 
 const slice = createSlice({

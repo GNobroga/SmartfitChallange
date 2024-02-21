@@ -15,10 +15,11 @@ function App() {
 
   const locations = useSelector((selector: AppState) => selector.location.data);
   const loading = useSelector((selector: AppState) => selector.location.loading);
+  const showClosedUnit = useSelector((selector: AppState) => selector.filter.showClosedUnit);
   const dispatch = useDispatch();
 
   React.useEffect(() => {
-    dispatch(getLocations() as any);
+    dispatch(getLocations(showClosedUnit) as any);
   }, []);
 
   React.useEffect(() => {

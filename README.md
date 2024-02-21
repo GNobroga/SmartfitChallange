@@ -4,7 +4,9 @@ Fazendo o desafio da Smartfit utilizando React. Link do repositório de referên
 
 ## Foto
 
-![alt text](image.png)
+![alt text](image-1.png)
+
+![alt text](image-2.png)
 
 
 ## Tecnologias 
