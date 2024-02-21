@@ -113,8 +113,6 @@ export const filterLocationsAndAddIsOpenFlag = function(locations: ILocation[]) 
 
         const { below, above } = splitHoursAndGetWithMinutes(schedule.hour);
 
-    console.log(below, above)
-
         const currentTime = today.getTime();
   
         return currentTime >= below.getTime() && currentTime <= above.getTime() 
@@ -137,19 +135,24 @@ export type Period = '06h às 12:00' | '12h01 às 18:00' | '18:01 às 23:00';
 const convertPeriodToDate = (period: Period) => {
     const periodStart: number[] = [18, 1];
     const periodFinish: number[] = [23, 0];
+
     if (period === '06h às 12:00') {
         periodStart[0] = 6;
-        periodFinish[1] = 12;
+        periodStart[1] = 0;
+        periodFinish[0] = 12;
     } 
-    else if (period === '12h01 às 18:00') {
+
+    if (period === '12h01 às 18:00') {
         periodStart[0] = 12;
-        periodStart[1] = 1;
         periodFinish[0] = 18;
     }
+
     const periodStartDate = new Date();
     const periodFinishDate = new Date();
+
     periodStartDate.setHours(periodStart[0], periodStart[1] ,0);
     periodFinishDate.setHours(periodFinish[0], periodFinish[1] ,0);
+
     return { periodStartDate, periodFinishDate };
 }
 
@@ -159,10 +162,14 @@ export const filterPerPeriod = (period: Period, data: ILocation[] | null) => {
    if (!data) return [];
     
    const { periodStartDate, periodFinishDate } = convertPeriodToDate(period);
+
+   
+   console.log(periodStartDate, periodFinishDate)
  
    const filterSchedules = (schedule: ISchedule) => {
 
         const { below, above } = splitHoursAndGetWithMinutes(schedule.hour);
+
 
         return (
             (below.getTime() >= periodStartDate.getTime() && below.getTime() <= periodFinishDate.getTime()) 
