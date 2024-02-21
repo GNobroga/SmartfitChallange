@@ -47,7 +47,7 @@ function Form() {
             </li>
         </ul>
       <div className="flex flex-col sm:flex-row justify-between">
-        <div className="flex gap-2 iems-center">
+        <div className="flex gap-2 items-center">
                 <input type="checkbox" name="showClosedUnit" onChange={() => dispatch(setShowClosedUnit(!showClosedUnit))}/>
                 <span>Exibir unidades fechadas</span>
             </div>

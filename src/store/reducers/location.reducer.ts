@@ -44,8 +44,14 @@ export const getLocations = () => async (dispatch: AppDispatch) => {
         const req = await fetch(apiConfig.baseUrl);
         const data = await req.json();
      
-        const locations = data.locations as ILocation[];
+        const locations: ILocation[] = (data.locations as  ILocation[])
+            .filter(x => x.schedules?.length > 0)
+            
+    
         const filtered = filterLocationsAndAddIsOpenFlag(locations);
+
+        filtered.sort((x, y) => new Number(x.isOpen) <  new Number(y.isOpen) ?  1 : -1)
+
         dispatch(success(filtered));
     } catch (error) {
         dispatch(failure(new Error('Um erro ocorreu, tente novamente mais tarde!')));

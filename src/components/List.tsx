@@ -12,7 +12,7 @@ function List({ data }: IProps) {
 
 
     return (
-        <ul className="flex flex-wrap justify-between gap-5">
+        <ul className="flex flex-wrap  gap-5">
             {
                 data.map((location, index) => <ListItem key={index} data={location}/>)
             }
