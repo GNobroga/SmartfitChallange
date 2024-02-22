@@ -1,16 +1,11 @@
-import React from "react";
 import { imageHelper } from "../helpers/imageHelper";
 import { ILocation } from "../models/location.model";
-
 
 interface IProps {
     data: ILocation;
 }
 
-
-
 function ListItem({ data }: IProps) {
-
     const showSchedules = () => {
         if (!data.isOpen) return null;
 
